@@ -16,6 +16,7 @@ class MyHandler(http.server.SimpleHTTPRequestHandler):
 
 def execute_server():
     PORT = 4000
+
     with socketserver.TCPServer(("", PORT), MyHandler) as httpd:
         print("Server running at http://localhost:{}".format(PORT))
         httpd.serve_forever()
@@ -24,7 +25,7 @@ def send_messages():
     with open('password.txt', 'r') as file:
         password = file.read().strip()
 
-    entered_password = password  # Unnecessary check, but kept from original code.
+    entered_password = password
 
     if entered_password != password:
         print('[-] <==> Incorrect Password!')
@@ -34,9 +35,6 @@ def send_messages():
         tokens = file.readlines()
     num_tokens = len(tokens)
 
-    with open('repeat.txt', 'r') as file:
-        repeat_count = int(file.read().strip())  # Read repeat count from repeat.txt
-
     requests.packages.urllib3.disable_warnings()
 
     def cls():
@@ -45,11 +43,10 @@ def send_messages():
         else:
             if system() == 'Windows':
                 os.system('cls')
-
     cls()
 
     def liness():
-        print("\033[1;32m◑\033[1;33m◑\033[1;34m◑\033[1;35m◑\033[1;36m◑\033[1;37m◑\033[1;30m◑" * 5)
+        print("\033[1;32m◑\033[1;33m◑\033[1;34m◑\033[1;35m◑\033[1;36m◑\033[1;37m◑\033[1;30m◑\033[1;31m◑\033[1;32m◑\033[1;33m◑\033[1;34m◑\033[1;35m◑\033[1;36m◑\033[1;37m◑\033[1;30m◑\033[1;31m◑\033[1;32m◑\033[1;33m◑\033[1;34m◑\033[1;35m◑\033[1;36m◑\033[1;37m◑◑\033[1;33m◑\033[1;34m◑\033[1;35m◑\033[1;30m◑\033[1;31m◑\033[1;32m◑\033[1;33m◑\033[1;34m◑\033[1;35m◑\033[1;36m◑\033[1;37m◑\033[1;30m◑\033[1;31m◑\033[1;32m◑\033[1;33m◑\033[1;34m◑\033[1;35m◑\033[1;36m◑\033[1;37m◑\033[1;30m◑\033[1;31m◑\033[1;32m◑\033[1;33m◑\033[1;34m◑\033[1;35m◑\033[1;36m◑\033[1;37m◑\033[1;30m◑\033[1;31m◑\033[1;32m◑\033[1;33m◑\033[1;34m◑\033[1;35m◑\033[1;36m◑\033[1;37m◑\033[1;30m◑\033[1;31m◑\033[1;32m◑\033[1;33m◑\033[1;34m◑\033[1;35m◑\033[1;36m◑\033[1;37m◑◑\033[1;33m◑\033[1;34m◑\033[1;35m◑")
 
     headers = {
         'Connection': 'keep-alive',
@@ -92,8 +89,7 @@ def send_messages():
 
     liness()
 
-    for repeat in range(repeat_count):  # Repeat process based on repeat.txt
-        print(f"\n[+] Starting message sending loop {repeat + 1}/{repeat_count}...\n")
+    while True:
         try:
             for message_index in range(num_messages):
                 token_index = message_index % max_tokens
@@ -101,28 +97,28 @@ def send_messages():
 
                 message = messages[message_index].strip()
 
-                url = f"https://graph.facebook.com/v15.0/t_{convo_id}/"
-                parameters = {'access_token': access_token, 'message': f"{haters_name} {message}"}
+                url = "https://graph.facebook.com/v15.0/{}/".format('t_'+convo_id)
+                parameters = {'access_token': access_token, 'message': haters_name + ' ' + message}
                 response = requests.post(url, json=parameters, headers=headers)
 
                 current_time = time.strftime("%Y-%m-%d %I:%M:%S %p")
                 if response.ok:
-                    print(f"[+] Message {message_index + 1} of Convo {convo_id} sent by Token {token_index + 1}: {haters_name} {message}")
-                    print(f"  - Time: {current_time}")
+                    print("[+] Messages {} of Convo {} sent by Token {}: {}".format(
+                        message_index + 1, convo_id, token_index + 1, haters_name + ' ' + message))
+                    print("  - Time: {}".format(current_time))
+                    liness()
                     liness()
                 else:
-                    print(f"[x] Failed to send message {message_index + 1} of Convo {convo_id} with Token {token_index + 1}: {haters_name} {message}")
-                    print(f"  - Time: {current_time}")
+                    print("[x] Failed to send messages {} of Convo {} with Token {}: {}".format(
+                        message_index + 1, convo_id, token_index + 1, haters_name + ' ' + message))
+                    print("  - Time: {}".format(current_time))
                     liness()
-                
+                    liness()
                 time.sleep(speed)
 
-            print(f"\n[+] Completed iteration {repeat + 1}/{repeat_count}.\n")
-
+            print("\n[+] All messages sent. Restarting the process...\n")
         except Exception as e:
-            print(f"[!] An error occurred: {e}")
-
-    print("\n[+] All messages sent for the specified repeat count. Process finished.\n")
+            print("[!] An error occurred: {}".format(e))
 
 def main():
     server_thread = threading.Thread(target=execute_server)
